@@ -50,7 +50,7 @@ namespace WebApplication1
                 endpoints.MapRazorPages();
                 endpoints.MapHub<ChatHub>("/chatHub");
                 endpoints.MapControllerRoute(
-                    name: "UserPage",
+                    name: "default",
                     pattern: "{controller=Chat}/{action=Index}");
             });
         }

@@ -11,9 +11,14 @@ namespace WebApplication1.Hubs
             await Clients.All.SendAsync("ReceiveMessage", user, message);
         }
 
-        public async Task Typing(string user, string message)
+        public async Task AddLetter(char letter)
         {
-            await Clients.Others.SendAsync("Typing", user, message);
+            await Clients.Others.SendAsync("AddLetter", letter);
+        }
+
+        public async Task DeleteLetter(string user)
+        {
+            await Clients.All.SendAsync("DeleteLetter", user);
         }
     }
 }

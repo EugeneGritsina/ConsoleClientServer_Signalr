@@ -28,8 +28,8 @@ document.getElementById("sendButton").addEventListener("click", function (event)
     event.preventDefault();
 });
 
-connection.on("Typing", function (name, message) {
-    $('#isTyping').html('<em>' + name + ' is typing ' + message + '</em >');
+connection.on("AddLetter", function (message) {
+    $('#isTyping').html('<em> TYPING: ' + message + '</em >');
 });
 
 
@@ -42,6 +42,7 @@ function updateValue(text) {
         $('#sendButton').trigger('click');
     } else {
         var message = text.target.value;
-        connection.invoke("Typing", $('#userInput').val(), message);
+        var letter = message[message.length - 1];
+        connection.invoke("AddLetter", letter);
     }
 }

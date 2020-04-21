@@ -16,9 +16,7 @@ namespace WebApplication1
             HubConnection connection = new HubConnectionBuilder().WithUrl("http://localhost:5000/chatHub").Build();
 
             Random random = new Random();
-
             int id = random.Next(1, 1000);
-
             string user = $"client{id}";
 
             connection.On("ReceiveMessage", (string user, string message) =>
@@ -26,11 +24,23 @@ namespace WebApplication1
                 Console.WriteLine($"{user}: {message}");
             });
 
-            connection.On("Typing", (string user, string message) =>
+            connection.On("AddLetter", (char letter) =>
             {
-                Console.WriteLine($"{user} is typing: {message}");
+                Console.Write(letter);
             });
 
+            connection.On("DeleteLetter", (string userName) =>
+            {
+                int x;
+                if (userName != user)               //при нажатии backspace у вызывающего в консоли курсор 
+                    x = Console.CursorLeft - 1;     //автоматически переводится на 1 пункт влево
+                else
+                    x = Console.CursorLeft;
+                int y = Console.CursorTop;
+                Console.SetCursorPosition(x, y);
+                Console.Write(' ');
+                Console.SetCursorPosition(x, y);
+            });
 
             Task host;
 
@@ -43,11 +53,12 @@ namespace WebApplication1
                     string message = "";
                     do
                     {
-
                         letter = Console.ReadKey().KeyChar;
+                        if(letter == '\b')
+                            connection.InvokeAsync("DeleteLetter",user);
+                        else
+                        connection.InvokeAsync("AddLetter", letter);
                         message += letter;
-                        connection.InvokeAsync("Typing", user, message);
-
 
                     } while (letter != '\r');
 
@@ -67,13 +78,11 @@ namespace WebApplication1
             }
         }
 
-
-
-            public static IHostBuilder CreateHostBuilder(string[] args) =>
-            Host.CreateDefaultBuilder(args)
-                .ConfigureWebHostDefaults(webBuilder =>
-                {
-                    webBuilder.UseStartup<Startup>();
-                });
+        public static IHostBuilder CreateHostBuilder(string[] args) =>
+        Host.CreateDefaultBuilder(args)
+            .ConfigureWebHostDefaults(webBuilder =>
+            {
+                webBuilder.UseStartup<Startup>();
+            });
     }
 }
