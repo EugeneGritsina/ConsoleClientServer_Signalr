@@ -13,12 +13,18 @@ namespace WebApplication1.Hubs
 
         public async Task AddLetter(char letter)
         {
-            await Clients.Others.SendAsync("AddLetter", letter);
+            await Clients.All.SendAsync("AddLetter", letter);
         }
 
         public async Task DeleteLetter(string user)
         {
             await Clients.All.SendAsync("DeleteLetter", user);
         }
+
+
+        //public async Task IsTyping(string user, string message)
+        //{
+        //    await Clients.All.SendAsync("SayWhoIsTyping", user, message);
+        //}
     }
 }

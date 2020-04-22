@@ -23,12 +23,10 @@ namespace WebApplication1
             {
                 Console.WriteLine($"{user}: {message}");
             });
-
             connection.On("AddLetter", (char letter) =>
             {
                 Console.Write(letter);
             });
-
             connection.On("DeleteLetter", (string userName) =>
             {
                 int x;
@@ -42,12 +40,14 @@ namespace WebApplication1
                 Console.SetCursorPosition(x, y);
             });
 
-            Task host;
+            Task check;
+            int freezeDelay = random.Next(300, 400);
 
             while (true)
             {
                 connection.StartAsync();
-                if (connection.State == HubConnectionState.Connected)
+                Thread.Sleep(500); //чтобы соединение успело установиться
+                while (connection.State == HubConnectionState.Connected)
                 {
                     char letter;
                     string message = "";
@@ -55,27 +55,49 @@ namespace WebApplication1
                     {
                         letter = Console.ReadKey().KeyChar;
                         if(letter == '\b')
-                            connection.InvokeAsync("DeleteLetter",user);
+                        {
+                            check = connection.InvokeAsync("DeleteLetter", user);
+                            Thread.Sleep(100);
+                            if(check.Status == TaskStatus.Faulted)
+                                break;
+                        }
                         else
-                        connection.InvokeAsync("AddLetter", letter);
-                        message += letter;
+                        {
+                            check = connection.InvokeAsync("AddLetter", letter);
+                            Thread.Sleep(100);
+                            if (check.Status == TaskStatus.Faulted)
+                                break;
+                            message += letter;
+                        }
 
                     } while (letter != '\r');
 
+                    if (check.Status == TaskStatus.Faulted)
+                        break;
+
                     connection.InvokeAsync("SendMessage", user, message);
                 }
-                else
+                try
                 {
-                    host = CreateHostBuilder(args).Build().RunAsync();
+                    Thread.Sleep(freezeDelay);
+                    check = CreateHostBuilder(args).Build().RunAsync();
                     Console.Clear();
-                    if (host.Status == TaskStatus.Faulted)
+                    if (check.Status == TaskStatus.Faulted)
                         Console.WriteLine("Connected.");
                     else
                         Console.WriteLine("You're hosting now.");
                     Thread.Sleep(1500);
                 }
-                connection.StartAsync();
+                catch
+                {
+                    connection.StartAsync();
+                }
             }
+        }
+
+        public static void StartHost(string[] args)
+        {
+
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>

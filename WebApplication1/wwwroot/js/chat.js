@@ -28,21 +28,39 @@ document.getElementById("sendButton").addEventListener("click", function (event)
     event.preventDefault();
 });
 
-connection.on("AddLetter", function (message) {
-    $('#isTyping').html('<em> TYPING: ' + message + '</em >');
+
+
+//connection.on("sayWhoIsTyping", function (name, message) {
+//    $('#isTyping').html('<em>' + name + ' is typing ' + message + '</em >');
+//});
+
+
+//const messageInput = document.getElementById('messageInput');
+
+//messageInput.addEventListener('input', updateValue);
+
+//function updateValue(text) {
+//    if (text.which == 13) {
+//        $('#sendButton').trigger('click');
+//    } else {
+//        var message = text.target.value;
+//        connection.invoke("isTyping", $('#userInput').val(), message);
+//    }
+//}
+
+messageInput.onkeydown = function (letter) {
+    if (letter.code == "Backspace")
+        connection.invoke("DeleteLetter", document.getElementById("userInput").value);
+    else {
+        connection.invoke("AddLetter", letter.key);
+    }
+}
+
+connection.on("AddLetter", function (letter) {
+    $('#isTyping').append('<em>' + letter + '</em >');
 });
 
 
-const messageInput = document.getElementById('messageInput');
-
-messageInput.addEventListener('input', updateValue);
-
-function updateValue(text) {
-    if (text.which == 13) {
-        $('#sendButton').trigger('click');
-    } else {
-        var message = text.target.value;
-        var letter = message[message.length - 1];
-        connection.invoke("AddLetter", letter);
-    }
-}
+connection.on("DeleteLetter", function (user) {
+    document.getElementById("isTyping").lastChild.remove();
+})
